@@ -4,6 +4,9 @@ import Image from "next/image";
 import React from "react";
 
 import { MuseoModerno } from "next/font/google";
+import AgentCard from "@/components/AgentCard";
+import { handleOnDragStart, handleDragOver, handleOnDrop } from "./lib/utils";
+import { AgentCardProps } from "./lib/interface";
 
 const museo = MuseoModerno({
   subsets: ["latin"],
@@ -31,19 +34,13 @@ const agentData = [
     description: "A brilliant but morally conflicted strategist.",
     image: "/images/square-red-preview.png",
   },
-  {
-    name: "Player 101",
-    description: "A violent gangster with a short temper.",
-    image: "/images/triangle-red-preview.png",
-  },
-  {
-    name: "Player 199",
-    description: "A kind-hearted migrant worker from Pakistan.",
-    image: "/images/square-red-preview.png",
-  },
 ];
 
 const Home = () => {
+  const [agents, setAgents] = React.useState<AgentCardProps[]>([]);
+
+  console.log(agents);
+
   return (
     <div className="flex flex-col justify-center items-center p-6 gap-5 min-h-screen">
       <p className="text-6xl font-bold mb-4">
@@ -51,38 +48,50 @@ const Home = () => {
       </p>
 
       <div
-        className={`border-2 border-[#fff] w-[80%] h-[80vh] rounded-lg flex justify-between p-4  shadow-lg`}
+        className={`border-2 border-[#fff] w-[80%]  rounded-lg flex justify-between items-center p-7  shadow-lg`}
       >
         <div className="grid grid-cols-2 gap-4 w-[35%]">
           {agentData.map((agent, index) => (
-            <div
+            <AgentCard
               key={index}
-              className="flex flex-col justify-between items-center transition-all duration-300 p-5 border border-[#F50276] rounded-lg bg-[#1A1A1A] hover:bg-[#FCF5E8] hover:text-[#F50276]"
-            >
-              <div>
-                <Image
-                  src={agent.image}
-                  width={100}
-                  height={100}
-                  alt={agent.name}
-                />
-              </div>
-              <p className="text-lg ">{agent.name}</p>
-              <p className={`text-sm text-center ${museo.className}`}>
-                {agent.description}
-              </p>
-            </div>
+              name={agent.name}
+              description={agent.description}
+              image={agent.image}
+              onDragStart={(e) => handleOnDragStart(e, agent)}
+            />
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4 w-[35%]">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className={`p-5 border border-[#F50276] rounded-lg hover:bg-[#F50276] hover:text-white transition-colors`}
-            >
-              <p>Agent {index + 1}</p>
+        <div
+          className=""
+          onDrop={(e) => handleOnDrop(e, setAgents)}
+          onDragOver={handleDragOver}
+        >
+          {agents.length > 0 ? (
+            agents.map((agent, index) => (
+              <AgentCard
+                key={index}
+                name={agent.name}
+                description={agent.description}
+                image={agent.image}
+              />
+            ))
+          ) : (
+            <div className="w-[200px] h-[200px] border-2 border-[#fff] rounded-lg flex justify-center items-center">
+              <p className="text-lg text-[#fff]">Drop your agents here</p>
             </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 w-[35%]">
+          {agentData.map((agent, index) => (
+            <AgentCard
+              key={index}
+              name={agent.name}
+              description={agent.description}
+              image={agent.image}
+              onDragStart={(e) => handleOnDragStart(e, agent)}
+            />
           ))}
         </div>
       </div>
