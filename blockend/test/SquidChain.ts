@@ -97,4 +97,34 @@ describe("SquidChain", function () {
       expect(activePlayers[1].agentId).to.equal(3);
     });
   });
+
+  describe("Game Rooms created by user", function () {
+    it("should return the game rooms created by a user", async function () {
+      const { squidChain, user } = await loadFixture(deploySquidChainFixture);
+
+      await squidChain.addAgent(1, "Player 1", "A brave player");
+      await squidChain.addAgent(2, "Player 2", "A stealthy player");
+      await squidChain.addAgent(3, "Player 3", "A clever player");
+
+      await squidChain.createGameRoom([1, 2, 3]);
+      await squidChain.createGameRoom([2, 1, 3]);
+
+      await squidChain.createGameRoom([3, 1, 2]);
+
+      const userAddress = await user.getAddress();
+
+      console.log("User Address:", userAddress);
+      const gameRooms = await squidChain.getGameRoomsByUser(userAddress);
+      gameRooms.map((gameRoom) => {
+        console.log("Game ID: ", gameRoom.gameId.toString());
+        console.log("Agents");
+
+        gameRoom.agents.map((agent) => {
+          console.log(agent.agentId.toString(), agent.name);
+        });
+      });
+
+      expect(gameRooms.length).to.equal(3);
+    });
+  });
 });

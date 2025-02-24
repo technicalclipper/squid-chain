@@ -18,9 +18,10 @@ contract SquidChain {
     }
 
     uint8 public gameCount;
+    mapping(address => GameRoom[]) public gamesByUser;
     mapping(uint8 => GameRoom) public gameRooms;
     mapping(uint8 => Agent) public agents;
-    
+
     constructor() {
         addAgent(1, "Agent 1", "Description 1");
         addAgent(2, "Agent 2", "Description 2");
@@ -44,6 +45,8 @@ contract SquidChain {
         gameRoom.gameStarted = false;
         gameRoom.gameEnded = false;
         gameRoom.currentRound = 0;
+
+        gamesByUser[msg.sender].push(gameRoom);
     }
 
     function eliminatePlayer(uint8 eliminateAgentId, uint8 gameId) public {
@@ -56,6 +59,7 @@ contract SquidChain {
                 break;
             }
         }
+
         agents[eliminateAgentId].eliminated = true;
     }
 
@@ -79,6 +83,10 @@ contract SquidChain {
         }
 
         return activeAgents;
+    }
+
+    function getGameRoomsByUser(address userAddress) public view returns (GameRoom[] memory) {
+        return gamesByUser[userAddress];
     }
 
     function getGameCount() public view returns (uint8) {
