@@ -5,4 +5,29 @@
 body {
   background-color: #010b09;
   color: #e6e6e6;
+  overflow: hidden;
+  
+}
+
+.agentCardScrollBar {
+  scrollbar-width: none;
+}
+
+/* Subtle Scrollbar Design */
+* {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #f50276 #010b09; /* Thumb and track */
+}
+
+*::-webkit-scrollbar {
+  width: 2px; /* Scrollbar width for Chrome, Safari, Edge */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #1f2937; /* Thumb color */
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #eef5ff;
 }
