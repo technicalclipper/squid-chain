@@ -1,5 +1,5 @@
 export const wagmiContractConfig = {
-  address: "0x954A79fF91E7709bF9018C602838684AE43c7e50",
+  address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   abi: [
     {
       inputs: [],
@@ -144,6 +144,45 @@ export const wagmiContractConfig = {
     {
       inputs: [
         {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "gamesByUser",
+      outputs: [
+        {
+          internalType: "uint8",
+          name: "gameId",
+          type: "uint8",
+        },
+        {
+          internalType: "bool",
+          name: "gameStarted",
+          type: "bool",
+        },
+        {
+          internalType: "bool",
+          name: "gameEnded",
+          type: "bool",
+        },
+        {
+          internalType: "uint8",
+          name: "currentRound",
+          type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
           internalType: "uint8",
           name: "gameId",
           type: "uint8",
@@ -190,6 +229,74 @@ export const wagmiContractConfig = {
           internalType: "uint8",
           name: "",
           type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "userAddress",
+          type: "address",
+        },
+      ],
+      name: "getGameRoomsByUser",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "uint8",
+              name: "gameId",
+              type: "uint8",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint8",
+                  name: "agentId",
+                  type: "uint8",
+                },
+                {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "description",
+                  type: "string",
+                },
+                {
+                  internalType: "bool",
+                  name: "eliminated",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct SquidChain.Agent[]",
+              name: "agents",
+              type: "tuple[]",
+            },
+            {
+              internalType: "bool",
+              name: "gameStarted",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "gameEnded",
+              type: "bool",
+            },
+            {
+              internalType: "uint8",
+              name: "currentRound",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct SquidChain.GameRoom[]",
+          name: "",
+          type: "tuple[]",
         },
       ],
       stateMutability: "view",

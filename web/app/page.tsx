@@ -7,85 +7,58 @@ import ConnectButton from "@/components/ConnectButton";
 import AgentCard from "@/components/AgentCard";
 import { IoClose } from "react-icons/io5";
 import { PiWarningCircleLight } from "react-icons/pi";
-
+import {
+  type BaseError,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { MuseoModerno } from "next/font/google";
 import { IoIosAddCircleOutline } from "react-icons/io";
+
+import {
+  handleOnDragStart,
+  handleDragOver,
+  handleOnDrop,
+  agentData,
+} from "./lib/utils";
+import { AgentCardProps } from "./lib/interface";
+import { useReadContract } from "wagmi";
+import { wagmiContractConfig } from "./lib/contract";
 
 const museo = MuseoModerno({
   subsets: ["latin"],
   weight: ["400"],
 });
-import { handleOnDragStart, handleDragOver, handleOnDrop } from "./lib/utils";
-import { AgentCardProps } from "./lib/interface";
-import { useReadContract } from "wagmi";
-import { wagmiContractConfig } from "./lib/contract";
-
-const agentData = [
-  {
-    name: "Player 001",
-    description: "The mysterious elderly contestant with a hidden agenda.",
-    image: "/images/circle-red-preview.png",
-    traits: ["Mastermind", "Deceptively Weak", "Cunning"],
-  },
-  {
-    name: "Player 067",
-    description: "A determined North Korean defector, skilled in survival.",
-    image: "/images/triangle-red-preview.png",
-    traits: ["Resourceful", "Brave", "Elusive"],
-  },
-  {
-    name: "Player 456",
-    description:
-      "The desperate but kind-hearted protagonist with a gambler's luck.",
-    image: "/images/circle-red-preview.png",
-    traits: ["Lucky", "Empathetic", "Unpredictable"],
-  },
-  {
-    name: "Player 218",
-    description:
-      "A brilliant but morally conflicted strategist, willing to do anything to win.",
-    image: "/images/square-red-preview.png",
-    traits: ["Calculating", "Manipulative", "Determined"],
-  },
-  {
-    name: "Player 199",
-    description:
-      "A kind-hearted migrant worker with exceptional strength and loyalty.",
-    image: "/images/circle-red-preview.png",
-    traits: ["Strong", "Trustworthy", "Naïve"],
-  },
-  {
-    name: "Player 101",
-    description:
-      "A violent gangster with a short temper and a taste for chaos.",
-    image: "/images/triangle-red-preview.png",
-    traits: ["Aggressive", "Unpredictable", "Ruthless"],
-  },
-  {
-    name: "Player 212",
-    description: "A loud and unpredictable wildcard who plays mind games.",
-    image: "/images/square-red-preview.png",
-    traits: ["Manipulative", "Flamboyant", "Survivor"],
-  },
-  {
-    name: "Player 240",
-    description: "A quiet but brave contestant with a tragic backstory.",
-    image: "/images/circle-red-preview.png",
-    traits: ["Selfless", "Courageous", "Loyal"],
-  },
-];
 
 const Home = () => {
   const [agents, setAgents] = React.useState<AgentCardProps[]>([]);
-
-  console.log(agents);
+  const { data: hash, error, isPending, writeContract } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
 
   const { data: gameId } = useReadContract({
     ...wagmiContractConfig,
     functionName: "getGameCount",
   });
 
+  const { data: activePlayers } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getActivePlayers",
+    args: [gameId || 0],
+  });
+
   console.log("Game iD:", gameId?.toString());
+  console.log("Active Players:", activePlayers);
+
+  const handleCreateGame = async () => {
+    writeContract({
+      ...wagmiContractConfig,
+      functionName: "createGameRoom",
+      args: [agents.map((agent) => agent.id)],
+    });
+  };
 
   return (
     <div className="flex flex-col  items-center p-6  min-h-screen ">
@@ -164,6 +137,7 @@ const Home = () => {
       </div>
 
       <button
+        onClick={handleCreateGame}
         disabled={agents.length < 3}
         className={`px-6 py-1 text-md mt-5  rounded-lg ${
           agents.length < 3
@@ -173,6 +147,13 @@ const Home = () => {
       >
         Create Game
       </button>
+
+      {hash && <div>Transaction Hash: {hash}</div>}
+      {isConfirming && <div>Waiting for confirmation...</div>}
+      {isConfirmed && <div>Transaction confirmed.</div>}
+      {error && (
+        <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+      )}
 
       {agents.length > 0 && agents.length < 3 && (
         <div
@@ -189,6 +170,7 @@ const Home = () => {
           {agentData.map((agent, index) => (
             <AgentCard
               key={index}
+              id={agent.id}
               name={agent.name}
               description={agent.description}
               image={agent.image}
