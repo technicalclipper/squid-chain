@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React from "react";
 import { IoSparkles } from "react-icons/io5";
-
+import ConnectButton from "@/components/ConnectButton";
 import AgentCard from "@/components/AgentCard";
 import { IoClose } from "react-icons/io5";
 import { PiWarningCircleLight } from "react-icons/pi";
@@ -17,6 +17,8 @@ const museo = MuseoModerno({
 });
 import { handleOnDragStart, handleDragOver, handleOnDrop } from "./lib/utils";
 import { AgentCardProps } from "./lib/interface";
+import { useReadContract } from "wagmi";
+import { wagmiContractConfig } from "./lib/contract";
 
 const agentData = [
   {
@@ -78,6 +80,13 @@ const Home = () => {
 
   console.log(agents);
 
+  const { data: gameId } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getGameCount",
+  });
+
+  console.log("Game iD:", gameId?.toString());
+
   return (
     <div className="flex flex-col  items-center p-6  min-h-screen ">
       <Image
@@ -98,6 +107,8 @@ const Home = () => {
       <p className={`text-6xl font-bold mb-4   `}>
         <span className={`text-[#F50276] `}>SQUID</span> CHAIN
       </p>
+
+      <ConnectButton />
 
       <div
         className={`border-2 border-dashed border-[#FCF5E8]  bg-[#2c2c2c] w-[80%]   rounded-lg flex ${
