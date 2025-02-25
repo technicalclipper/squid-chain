@@ -2,8 +2,8 @@
 import { Bebas_Neue } from "next/font/google"; // Importing Bangers font
 import "./globals.css";
 import { PrivyProvider } from "@privy-io/react-auth";
-import { privyConfig } from "./lib/privyConfig";
-import { config } from "./lib/wagmiConfig";
+import { privyConfig } from "../lib/privyConfig";
+import { config } from "../lib/wagmiConfig";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "@privy-io/wagmi";
 import Navbar from "@/components/ConnectButton";

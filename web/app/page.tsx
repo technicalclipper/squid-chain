@@ -20,10 +20,10 @@ import {
   handleDragOver,
   handleOnDrop,
   agentData,
-} from "./lib/utils";
-import { AgentCardProps } from "./lib/interface";
+} from "../lib/utils";
+import { AgentCardProps } from "../lib/interface";
 import { useReadContract } from "wagmi";
-import { wagmiContractConfig } from "./lib/contract";
+import { wagmiContractConfig } from "../lib/contract";
 
 const museo = MuseoModerno({
   subsets: ["latin"],
@@ -56,7 +56,11 @@ const Home = () => {
     writeContract({
       ...wagmiContractConfig,
       functionName: "createGameRoom",
-      args: [agents.map((agent) => agent.id)],
+      args: [
+        agents
+          .map((agent) => agent.id)
+          .filter((id): id is number => id !== undefined),
+      ],
     });
   };
 
@@ -104,11 +108,11 @@ const Home = () => {
                 }
               />
               <Image
-                src={agent.image}
+                src={agent.image || ""}
                 width={100}
                 height={100}
                 className="bg-[#FCF5E8] rounded-lg"
-                alt={agent.name}
+                alt={agent.name || ""}
               />
 
               <div>
