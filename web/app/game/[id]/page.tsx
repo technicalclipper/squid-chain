@@ -5,7 +5,10 @@ import Image from "next/image";
 import { agentData } from "@/lib/utils";
 import { MuseoModerno } from "next/font/google";
 import { GameAgentCard } from "@/components/GameAgentCard";
-import { AgentCardProps } from "@/lib/interface";
+import { AgentCardProps, SenderType } from "@/lib/interface";
+import GameCard from "@/components/GameCard";
+import ChatInterface from "@/components/ChatInterface";
+
 const museo = MuseoModerno({
   subsets: ["latin"],
   weight: ["400"],
@@ -24,11 +27,67 @@ const GamePage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const gameRoom = {
+    gameId: 1,
+    gameStarted: true,
+    gameEnded: false,
+    currentRound: 1,
+  };
+
+  const messages = [
+    {
+      content: "This is Round 1",
+      sender: SenderType.MODERATOR,
+      image: "/images/moderator.png",
+      name: "Moderator",
+    },
+    {
+      content: "I have completed round 1",
+      sender: SenderType.AGENT,
+      image: "/images/circle-red-preview.png",
+      name: "Agent 1",
+    },
+    {
+      content: "Round 2 has started",
+      sender: SenderType.MODERATOR,
+      image: "/images/moderator.png",
+      name: "Moderator",
+    },
+    {
+      content: "I am ready for round 2",
+      sender: SenderType.AGENT,
+      image: "/images/square-red-preview.png",
+      name: "Agent 2",
+    },
+    {
+      content: "Round 2 is now complete",
+      sender: SenderType.MODERATOR,
+      image: "/images/moderator.png",
+      name: "Moderator",
+    },
+    {
+      content: "I have completed round 2",
+      sender: SenderType.AGENT,
+      image: "/images/circle-red-preview.png",
+      name: "Agent 3",
+    },
+  ];
+
   return (
     <div className="flex items-center justify-center h-screen bg-black text-white relative p-10">
       {/* Moderator in the center */}
-      <div className=" w-[20%] bg-[#121212] h-full p-5">
-        <p className="text-2xl">Game Room</p>
+      <div className=" w-[20%]  h-full flex flex-col">
+        <div className="bg-[#131313] h-[30%] border">
+          <GameCard
+            gameId={gameRoom.gameId}
+            gameStarted={gameRoom.gameStarted}
+            gameEnded={gameRoom.gameEnded}
+            currentRound={gameRoom.currentRound}
+          />
+        </div>
+        <div className="bg-[#131313] h-[70%] border ">
+          <ChatInterface messages={messages} />
+        </div>
       </div>
 
       <div className="relative w-[60%] h-full border ">

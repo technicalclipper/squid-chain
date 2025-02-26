@@ -41,11 +41,16 @@ describe("SquidChain", function () {
     it("should add an agent to the game", async function () {
       const { squidChain } = await loadFixture(deploySquidChainFixture);
 
-      const agent = await squidChain.agents(1);
+      await squidChain.addAgent(4, "Agent 4", "Description 4", "Image 4", [
+        "trait1",
+        "trait2",
+      ]);
 
-      expect(agent.agentId).to.equal(1);
-      expect(agent.name).to.equal("Agent 1");
-      expect(agent.description).to.equal("Description 1");
+      const agent = await squidChain.agents(4);
+
+      expect(agent.agentId).to.equal(4);
+      expect(agent.name).to.equal("Agent 4");
+      expect(agent.description).to.equal("Description 4");
       expect(agent.eliminated).to.equal(false);
     });
 
