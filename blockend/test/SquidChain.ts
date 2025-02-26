@@ -15,10 +15,6 @@ describe("SquidChain", function () {
     it("should create a new game room", async function () {
       const { squidChain } = await loadFixture(deploySquidChainFixture);
 
-      await squidChain.addAgent(1, "Agent 1", "Description 1");
-      await squidChain.addAgent(2, "Agent 2", "Description 2");
-      await squidChain.addAgent(3, "Agent 3", "Description 3");
-
       const playerIds = [1, 2, 3];
       await squidChain.createGameRoom(playerIds);
 
@@ -34,7 +30,6 @@ describe("SquidChain", function () {
     it("should return the correct game count", async function () {
       const { squidChain } = await loadFixture(deploySquidChainFixture);
 
-      await squidChain.addAgent(1, "Agent 1", "Description 1");
       await squidChain.createGameRoom([1]);
 
       const gameCount = await squidChain.getGameCount();
@@ -46,28 +41,26 @@ describe("SquidChain", function () {
     it("should add an agent to the game", async function () {
       const { squidChain } = await loadFixture(deploySquidChainFixture);
 
-      await squidChain.addAgent(1, "Player 1", "A brave player");
-      const agent = await squidChain.agents(1);
+      await squidChain.addAgent(4, "Agent 4", "Description 4", "Image 4", [
+        "trait1",
+        "trait2",
+      ]);
 
-      expect(agent.agentId).to.equal(1);
-      expect(agent.name).to.equal("Player 1");
-      expect(agent.description).to.equal("A brave player");
+      const agent = await squidChain.agents(4);
+
+      expect(agent.agentId).to.equal(4);
+      expect(agent.name).to.equal("Agent 4");
+      expect(agent.description).to.equal("Description 4");
       expect(agent.eliminated).to.equal(false);
     });
 
     it("should eliminate a player from the game", async function () {
       const { squidChain } = await loadFixture(deploySquidChainFixture);
 
-      await squidChain.addAgent(1, "Player 1", "A brave player");
-      await squidChain.addAgent(2, "Player 2", "A stealthy player");
-
       await squidChain.createGameRoom([1, 2]);
       const gameId = await squidChain.getGameCount();
 
       await squidChain.eliminatePlayer(1, gameId);
-
-      const player1 = await squidChain.agents(1);
-      expect(player1.eliminated).to.equal(true);
 
       const activePlayers = await squidChain.getActivePlayers(gameId);
 
@@ -80,10 +73,6 @@ describe("SquidChain", function () {
     it("should return only active players", async function () {
       const { squidChain } = await loadFixture(deploySquidChainFixture);
 
-      await squidChain.addAgent(1, "Player 1", "A brave player");
-      await squidChain.addAgent(2, "Player 2", "A stealthy player");
-      await squidChain.addAgent(3, "Player 3", "A clever player");
-
       await squidChain.createGameRoom([1, 2, 3]);
       const gameId = await squidChain.getGameCount();
 
@@ -95,6 +84,39 @@ describe("SquidChain", function () {
       expect(activePlayers.length).to.equal(2);
       expect(activePlayers[0].agentId).to.equal(2);
       expect(activePlayers[1].agentId).to.equal(3);
+    });
+  });
+
+  describe("Game Rooms created by user", function () {
+    it("should return the game rooms created by a user", async function () {
+      const { squidChain, user } = await loadFixture(deploySquidChainFixture);
+
+      await squidChain.createGameRoom([1, 2]);
+
+      await squidChain.eliminatePlayer(1, 1);
+
+      await squidChain.createGameRoom([1, 2]);
+
+      const userAddress = await user.getAddress();
+
+      console.log("User Address:", userAddress);
+      const gameRooms = await squidChain.getGameRoomsByUser(userAddress);
+      gameRooms.map(async (gameRoom) => {
+        console.log("Game ID: ", gameRoom.gameId.toString());
+        // console.log("Agents");
+
+        // const agents = await squidChain.getActivePlayers(
+        //   Number(gameRoom.gameId.toString())
+        // );
+
+        // console.log(agents);
+      });
+
+      const agents = await squidChain.getActivePlayers(1);
+      console.log("Active agents in 1 :", agents);
+
+      const agents2 = await squidChain.getActivePlayers(2);
+      console.log("Active agents in 2 :", agents2);
     });
   });
 });

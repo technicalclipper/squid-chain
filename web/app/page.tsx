@@ -1,101 +1,191 @@
+"use client";
+
 import Image from "next/image";
+import React from "react";
+import { IoSparkles } from "react-icons/io5";
+import ConnectButton from "@/components/ConnectButton";
+import AgentCard from "@/components/AgentCard";
+import { IoClose } from "react-icons/io5";
+import { PiWarningCircleLight } from "react-icons/pi";
+import {
+  type BaseError,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
+import { MuseoModerno } from "next/font/google";
+import { IoIosAddCircleOutline } from "react-icons/io";
 
-export default function Home() {
+import {
+  handleOnDragStart,
+  handleDragOver,
+  handleOnDrop,
+  agentData,
+} from "../lib/utils";
+import { AgentCardProps } from "../lib/interface";
+import { useReadContract } from "wagmi";
+import { wagmiContractConfig } from "../lib/contract";
+
+const museo = MuseoModerno({
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const Home = () => {
+  const [agents, setAgents] = React.useState<AgentCardProps[]>([]);
+  const { data: hash, error, isPending, writeContract } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
+
+  const { data: gameId } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getGameCount",
+  });
+
+  const { data: activePlayers } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getActivePlayers",
+    args: [gameId || 0],
+  });
+
+  console.log("Game iD:", gameId?.toString());
+  console.log("Active Players:", activePlayers);
+
+  const handleCreateGame = async () => {
+    writeContract({
+      ...wagmiContractConfig,
+      functionName: "createGameRoom",
+      args: [
+        agents
+          .map((agent) => agent.id)
+          .filter((id): id is number => id !== undefined),
+      ],
+    });
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex flex-col  items-center p-6  min-h-screen ">
+      <Image
+        src={"/images/umbrella.png"}
+        width={200}
+        height={200}
+        alt=""
+        className="absolute w-72 h-72 inline-block left-[0px] text-gray-800  rotate-[-25deg] opacity-50"
+      />
+      <Image
+        src={"/images/star.png"}
+        width={200}
+        height={200}
+        alt=""
+        className="absolute w-96 h-96 inline-block right-[0] bottom-20 text-gray-800 z-0 rotate-[20deg] opacity-50"
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <p className={`text-6xl font-bold mb-4   `}>
+        <span className={`text-[#F50276] `}>SQUID</span> CHAIN
+      </p>
+
+      <ConnectButton />
+
+      <div
+        className={`border-2 border-dashed border-[#FCF5E8]  bg-[#2c2c2c] w-[80%]   rounded-lg flex ${
+          agents.length >= 3 ? "justify-start" : "justify-center"
+        } gap-5 items-center p-7 overflow-x-scroll overflow-y-hidden shadow-lg agentCardScrollBar `}
+        onDrop={(e) => handleOnDrop(e, setAgents)}
+        onDragOver={handleDragOver}
+      >
+        {agents.length > 0 ? (
+          agents.map((agent, index) => (
+            <div
+              className="relative flex p-5 gap-5 border rounded-lg bg-[#131313] border-[#F50276] flex-shrink-0  w-[300px]"
+              key={index}
+            >
+              <IoClose
+                className="absolute top-3 right-3 hover:bg-[#FCF5E8] rounded-full hover:text-[#F50276] cursor-pointer"
+                size={20}
+                onClick={() =>
+                  setAgents((prev) => prev.filter((_, i) => i !== index))
+                }
+              />
+              <Image
+                src={agent.image || ""}
+                width={100}
+                height={100}
+                className="bg-[#FCF5E8] rounded-lg"
+                alt={agent.name || ""}
+              />
+
+              <div>
+                <p className="text-lg  tracking-wide">{agent.name}</p>
+                <p className={`text-xs  ${museo.className}`}>
+                  {agent.description}
+                </p>
+              </div>
+            </div>
+            // <AgentCard
+            //   key={index}
+            //   name={agent.name}
+            //   description={agent.description}
+            //   image={agent.image}
+            //   traits={agent.traits}
+            // />
+          ))
+        ) : (
+          <div className="flex flex-col justify-center items-center">
+            <p className={"text-lg text-[#fff] " + museo.className}>
+              Drop your agents here
+            </p>
+            <IoIosAddCircleOutline size={50} />
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleCreateGame}
+        disabled={agents.length < 3}
+        className={`px-6 py-1 text-md mt-5  rounded-lg ${
+          agents.length < 3
+            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+            : "bg-[#F50276] text-white hover:bg-[#d40063] cursor-pointer"
+        }`}
+      >
+        Create Game
+      </button>
+
+      {hash && <div>Transaction Hash: {hash}</div>}
+      {isConfirming && <div>Waiting for confirmation...</div>}
+      {isConfirmed && <div>Transaction confirmed.</div>}
+      {error && (
+        <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+      )}
+
+      {agents.length > 0 && agents.length < 3 && (
+        <div
+          className={`flex gap-3 mt-2 items-center justify-center text-xs text-red-400 ${museo.className} `}
+        >
+          <PiWarningCircleLight size={20} />
+          <p>You need to select at least 3 agents to start the game.</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
+
+      <div className="w-[92%] absolute bottom-0 ">
+        <p className="text-2xl  mb-4">Agents List</p>
+        <div className="flex gap-10 overflow-x-scroll overflow-y-hidden pb-5 ">
+          {agentData.map((agent, index) => (
+            <AgentCard
+              key={index}
+              id={agent.id}
+              name={agent.name}
+              description={agent.description}
+              image={agent.image}
+              onDragStart={(e) => handleOnDragStart(e, agent)}
+              traits={agent.traits}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Home;
